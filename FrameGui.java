@@ -1,16 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @author Rauhil Fahmi (1206208145)
+ * @author Irvi Firqotul Aini (1306463591)
+ * 
+ * 
+ * @version 2016/04/24
+ * 
  */
+
 package tugas.cis;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -19,12 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
 
-/**
- *
- * @author RAUHIL
- */
 public class FrameGui extends JFrame {
     private final Panel panel = new Panel();
     FrameGui(String title){
@@ -50,7 +49,6 @@ class Panel extends JPanel implements ActionListener {
     public Panel () {
         setLayout(null);
         setBackground(Color.PINK);
-        setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         initComponents();
         setLocation(10,100);
         setSize(692,300);
@@ -144,7 +142,7 @@ class Panel extends JPanel implements ActionListener {
         enkripsi.setLocation(475,270);
         enkripsi.addActionListener(this);
       
-        copyright = new JLabel("&#169;copyright.rauhil-irvi.cis2016@fasilkom-ui");
+        copyright = new JLabel("copyright.rauhil-irvi.cis2016@fasilkom-ui");
         copyright.setHorizontalAlignment(SwingConstants.CENTER);
         copyright.setSize(680,20);
         copyright.setFont(new Font("Times New Roman",0,12));
@@ -210,3 +208,9 @@ class Panel extends JPanel implements ActionListener {
     }
 }
 
+/**
+ * Sumber yang dijadikan sebagai Refrensi:
+ * -- https://github.com/hesahesa/xts-aes-java
+ * -- http://stackoverflow.com
+ * -- scele.cs.ui.ac.id/mod/resource/view.php?id=79983
+ */

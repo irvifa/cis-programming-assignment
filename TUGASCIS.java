@@ -1,21 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @author Rauhil Fahmi (1206208145)
+ * @author Irvi Firqotul Aini (1306463591)
+ * 
+ * 
+ * @version 2016/04/24
+ * 
  */
+
 package tugas.cis;
 
 import javax.swing.JFrame;
 
-/**
- *
- * @author RAUHIL
- */
 public class TUGASCIS {
-
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         FrameGui firstPage = new FrameGui("XTS-AES"); 
         firstPage.setVisible(true);
@@ -23,3 +19,11 @@ public class TUGASCIS {
         
     }
 }
+
+
+/**
+ * Sumber yang dijadikan sebagai Refrensi:
+ * -- https://github.com/hesahesa/xts-aes-java
+ * -- http://stackoverflow.com
+ * -- scele.cs.ui.ac.id/mod/resource/view.php?id=79983
+ */
