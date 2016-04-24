@@ -1,8 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @author Rauhil Fahmi (1206208145)
+ * @author Irvi Firqotul Aini (1306463591)
+ * 
+ * 
+ * @version 2016/04/24
  */
+
 package tugas.cis;
 
 import java.io.BufferedReader;
@@ -10,44 +13,52 @@ import java.io.FileReader;
 import java.io.RandomAccessFile;
 
 /**
- *
- * @author RAUHIL
+ * Class XTSAES digunakan untuk melakukan enkripsi maupun dekripsi data 
+ * dengan key tertentu
  */
 class XTSAES {
-    private static final int blockSize = 16;
-    private static final int keyLength = 64;
-    private static final byte[] nonce = Util.hex2byte("12345678901234567890123456789012");
+    //Variabel-variable yang akan digunakan dalam kelas
+    private static final byte[] idx = Util.hex2byte("12345678901234567890123456789012");
     private static final int numberThreat = 100;
     private final String plain;
     private final String cipher;
     private final String key;
-    private byte[] nonceDP = null;
-    private byte[][] multiplyDP = null;
+    private byte[] idxx = null;
+    private byte[][] multiply = null;
 
+    //Contructor
     public XTSAES(String key, String plain, String cipher) {
         this.plain = plain;
         this.key = key;
         this.cipher = cipher;
     }
-
+    
+    /**
+     * method enkripsi 
+     *
+     * @param key merupakan key yang digunakan untuk proses enkripsi
+     * @param plain merupakan plaintext dari proses enkripsi
+     * @param cipher merupakan hasil dari proses enkripsi
+     * @throws Exception
+     */
     public void enkripsi(String key, String plain, String cipher) throws Exception {
         String read;
         try (BufferedReader br = new BufferedReader(new FileReader(key))) {
             read = br.readLine();
         }
 
-        String key1 = read.substring(0, keyLength / 2);
-        String key2 = read.substring(keyLength / 2, read.length());
+        String key1 = read.substring(0, 64 / 2);
+        String key2 = read.substring(64 / 2, read.length());
         byte[] key11 = Util.hex2byte(key1);
         byte[] key22 = Util.hex2byte(key2);
-        byte[] i = nonce;
+        byte[] i = idx;
 
         RandomAccessFile raf2;
         try (RandomAccessFile raf1 = new RandomAccessFile(plain, "r")) {
             raf2 = new RandomAccessFile(cipher, "rw");
             long fileSize = raf1.length();
-            int m = (int) (fileSize / blockSize);
-            int b = (int) (fileSize % blockSize);
+            int m = (int) (fileSize / 16);
+            int b = (int) (fileSize % 16);
             byte[][] bufferIn = new byte[m + 1][16];
             bufferIn[m] = new byte[b];
             for (byte[] bufferIn1 : bufferIn) {
@@ -57,13 +68,13 @@ class XTSAES {
             bufferOut[m] = new byte[b];
             AES aes = new AES();
             aes.setKey(key22);
-            if (nonceDP == null) {
-                nonceDP = aes.encrypt(i);
+            if (idxx == null) {
+                idxx= aes.encrypt(i);
             }
-            buildTable(nonceDP, m + 1);
+            buildTable(idxx, m + 1);
             Thread[] worker = new Thread[numberThreat];
             for (int a = 0; a <= m - 2; a++) {
-                worker[a % numberThreat] = new Thread(new WorkerThread(WorkerThread.ENCRYPT, bufferOut[a], bufferIn[a], key11, key22, a, i));
+                worker[a % numberThreat] = new Thread(new runThread(runThread.ENCRYPT, bufferOut[a], bufferIn[a], key11, key22, a, i));
                 worker[a % numberThreat].start();
                 if (a % numberThreat == numberThreat - 1) {
                     for (int aa = 0; aa < numberThreat; aa++) {
@@ -79,11 +90,11 @@ class XTSAES {
                 }
             }
             if (b == 0) {
-                perBlockEncrypt(bufferOut[m - 1], bufferIn[m - 1], key11, key22, m - 1, i);
+                blockEncrypt(bufferOut[m - 1], bufferIn[m - 1], key11, key22, m - 1, i);
                 bufferOut[m] = new byte[0];
             } else {
-                byte[] cc = new byte[blockSize];
-                perBlockEncrypt(cc, bufferIn[m - 1], key11, key22, m - 1, i);
+                byte[] cc = new byte[16];
+                blockEncrypt(cc, bufferIn[m - 1], key11, key22, m - 1, i);
                 System.arraycopy(cc, 0, bufferOut[m], 0, b);
                 byte[] cp = new byte[16 - b];
                 int ctr = 16 - b;
@@ -97,7 +108,7 @@ class XTSAES {
                 for (int a = b; a < pp.length; a++) {
                     pp[a] = cp[a - b];
                 }
-                perBlockEncrypt(bufferOut[m - 1], pp, key11, key22, m, i);
+                blockEncrypt(bufferOut[m - 1], pp, key11, key22, m, i);
             }
             for (byte[] bufferOut1 : bufferOut) {
                 raf2.write(bufferOut1);
@@ -105,25 +116,33 @@ class XTSAES {
         }
         raf2.close();
     }
-
+    
+    /**
+     * method dekripsi 
+     *
+     * @param key merupakan key yang digunakan untuk proses enkripsi
+     * @param plain merupakan plaintext dari proses enkripsi
+     * @param cipher merupakan hasil dari proses enkripsi
+     * @throws Exception
+     */
     public void dekripsi(String key, String plain, String cipher) throws Exception {
         String read;
         try (BufferedReader br = new BufferedReader(new FileReader(key))) {
             read = br.readLine();
         }
 
-        String key1 = read.substring(0, keyLength / 2);
-        String key2 = read.substring(keyLength / 2, read.length());
+        String key1 = read.substring(0, 64 / 2);
+        String key2 = read.substring(64 / 2, read.length());
         byte[] key11 = Util.hex2byte(key1);
         byte[] key22 = Util.hex2byte(key2);
-        byte[] i = nonce;
+        byte[] i = idx;
 
         RandomAccessFile raf2;
         try (RandomAccessFile raf1 = new RandomAccessFile(plain, "r")) {
             raf2 = new RandomAccessFile(cipher, "rw");
             long fileSize = raf1.length();
-            int m = (int) (fileSize / blockSize);
-            int b = (int) (fileSize % blockSize);
+            int m = (int) (fileSize / 16);
+            int b = (int) (fileSize % 16);
             byte[][] bufferIn = new byte[m + 1][16];
             bufferIn[m] = new byte[b];
             for (byte[] bufferIn1 : bufferIn) {
@@ -133,13 +152,13 @@ class XTSAES {
             bufferOut[m] = new byte[b];
             AES aes = new AES();
             aes.setKey(key22);
-            if (nonceDP == null) {
-                nonceDP = aes.encrypt(i);
+            if (idxx == null) {
+                idxx= aes.encrypt(i);
             }
-            buildTable(nonceDP, m + 1);
+            buildTable(idxx, m + 1);
             Thread[] worker = new Thread[numberThreat];
             for (int a = 0; a <= m - 2; a++) {
-                worker[a % numberThreat] = new Thread(new WorkerThread(WorkerThread.DECRYPT,bufferOut[a], bufferIn[a], key11, key22, a, i));
+                worker[a % numberThreat] = new Thread(new runThread(runThread.DECRYPT,bufferOut[a], bufferIn[a], key11, key22, a, i));
                 worker[a % numberThreat].start();
                 if (a % numberThreat == numberThreat - 1) {
                     for (int aa = 0; aa < numberThreat; aa++) {
@@ -155,11 +174,11 @@ class XTSAES {
                 }
             }
             if (b == 0) {
-                perBlockDecrypt(bufferOut[m - 1], bufferIn[m - 1], key11, key22, m - 1, i);
+                blockDecrypt(bufferOut[m - 1], bufferIn[m - 1], key11, key22, m - 1, i);
                 bufferOut[m] = new byte[0];
             } else {
-                byte[] cc = new byte[blockSize];
-                perBlockDecrypt(cc, bufferIn[m - 1], key11, key22, m, i);
+                byte[] cc = new byte[16];
+                blockDecrypt(cc, bufferIn[m - 1], key11, key22, m, i);
                 System.arraycopy(cc, 0, bufferOut[m], 0, b);
                 byte[] cp = new byte[16 - b];
                 int ctr = 16 - b;
@@ -173,7 +192,7 @@ class XTSAES {
                 for (int a = b; a < pp.length; a++) {
                     pp[a] = cp[a - b];
                 }
-                perBlockDecrypt(bufferOut[m - 1], pp, key11, key22, m - 1, i);
+                blockDecrypt(bufferOut[m - 1], pp, key11, key22, m - 1, i);
             }
             for (byte[] bufferOut1 : bufferOut) {
                 raf2.write(bufferOut1);
@@ -182,48 +201,85 @@ class XTSAES {
         raf2.close();
     }
 
-    public void perBlockEncrypt(byte[] ret, byte[] plain, byte[] key1, byte[] key2, int j, byte[] i) {
+    
+     /**
+     * method untuk melakukan enkripsi per block data
+     * menggunakan XTS-AES.
+     * 
+     * @param p ciphertext berukuran 1 blok / 16 byte / 128 bit
+     * @param plain 
+     * @param key1 
+     * @param key2 
+     * @param j nomor blok, dimulai dari 0
+     * @param i 
+     * @return 16 byte data hasil enkripsi
+     */
+    public void blockEncrypt(byte[] p, byte[] plain, byte[] key1, byte[] key2, int j, byte[] i) {
         AES aes = new AES();
-        byte[] t = multiplyDP[j];
-        byte[] pp = new byte[blockSize];
+        // T <- tabular array of multiplication value
+        byte[] t = multiply[j];
+        
+        // PP <- P xor T
+        byte[] pp = new byte[16];
         for (int a = 0; a < pp.length; a++) {
             pp[a] = (byte) (plain[a] ^ t[a]);
         }
-        aes = new AES();
+        
+        // CC <- AES-enc(Key1, PP)
         aes.setKey(key1);
         byte[] cc = aes.encrypt(pp);
-        for (int a = 0; a < ret.length; a++) {
-            ret[a] = (byte) (cc[a] ^ t[a]);
+         // C <- CC xor T
+        for (int a = 0; a < p.length; a++) {
+            p[a] = (byte) (cc[a] ^ t[a]);
         }
     }
-
-    public void perBlockDecrypt(byte[] ret, byte[] cipher, byte[] key1, byte[] key2, int j, byte[] i) {
+    
+     /**
+     * method untuk melakukan dekripsi per block data
+     * menggunakan XTS-AES.
+     * 
+     * @param p ciphertext berukuran 1 blok / 16 byte / 128 bit
+     * @param plain 
+     * @param key1 
+     * @param key2 
+     * @param j nomor blok, dimulai dari 0
+     * @param i 
+     * @return 16 byte data hasil dekripsi
+     */
+    public void blockDecrypt(byte[] p, byte[] cipher, byte[] key1, byte[] key2, int j, byte[] i) {
         AES aes = new AES();
-        byte[] t = multiplyDP[j];
-        byte[] cc = new byte[blockSize];
+        // T <- tabular array of multiplication value
+        byte[] t = multiply[j];
+        
+        // CC <- C xor T
+        byte[] cc = new byte[16];
         for (int a = 0; a < cc.length; a++) {
             cc[a] = (byte) (cipher[a] ^ t[a]);
         }
-        aes = new AES();
+        
+       // PP <- AES-dec(Key1, CC)
         aes.setKey(key1);
         byte[] pp = aes.decrypt(cc);
-        for (int a = 0; a < ret.length; a++) {
-            ret[a] = (byte) (pp[a] ^ t[a]);
+        
+        // P <- PP xor T
+        for (int a = 0; a < p.length; a++) {
+            p[a] = (byte) (pp[a] ^ t[a]);
         }
     }
-
+    
     private void buildTable(byte[] a, int numBlock) {
-        multiplyDP = new byte[numBlock][blockSize];
-        multiplyDP[0] = a;
+        multiply= new byte[numBlock][16];
+        multiply[0] = a;
         for (int i = 1; i < numBlock; i++) {
-            multiplyDP[i][0] = (byte) ((2 * (multiplyDP[i - 1][0] % 128)) ^ (135 * (multiplyDP[i - 1][15] / 128)));
+            multiply[i][0] = (byte) ((2 * (multiply[i - 1][0] % 128)) ^ (135 * (multiply[i - 1][15] / 128)));
             for (int k = 1; k < 16; k++) {
-                multiplyDP[i][k] = (byte) ((2 * (multiplyDP[i - 1][k] % 128)) ^ (multiplyDP[i - 1][k - 1] / 128));
+                multiply[i][k] = (byte) ((2 * (multiply[i - 1][k] % 128)) ^ (multiply[i - 1][k - 1] / 128));
             }
         }
     }
-
-    class WorkerThread implements Runnable {
+   
+   //Class untuk melakukan eknripsi atau dekripsi sesuai dengan mode
+   class runThread implements Runnable {
         public static final int ENCRYPT = 0;
         public static final int DECRYPT = 1;
         private final int mode;
@@ -234,7 +290,7 @@ class XTSAES {
         private final int j;
         private final byte[] i;
 
-        public WorkerThread(int mode, byte[] dest, byte[] source, byte[] key1,byte[] key2, int j, byte[] i) {
+        public runThread(int mode, byte[] dest, byte[] source, byte[] key1,byte[] key2, int j, byte[] i) {
             this.mode = mode;
             this.dest = dest;
             this.source = source;
@@ -248,12 +304,20 @@ class XTSAES {
         public void run() {
             switch (this.mode) {
                 case ENCRYPT:
-                    perBlockEncrypt(dest, source, key1, key2, j, i);
+                    blockEncrypt(dest, source, key1, key2, j, i);
                     break;
                 case DECRYPT:
-                    perBlockDecrypt(dest, source, key1, key2, j, i);
+                    blockDecrypt(dest, source, key1, key2, j, i);
                     break;
             }
         }
     }
 }
+
+
+/**
+ * Sumber yang dijadikan sebagai Refrensi:
+ * -- https://github.com/hesahesa/xts-aes-java
+ * -- http://stackoverflow.com
+ * -- scele.cs.ui.ac.id/mod/resource/view.php?id=79983
+ */

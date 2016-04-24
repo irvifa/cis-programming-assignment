@@ -1,14 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @author Rauhil Fahmi (1206208145)
+ * @author Irvi Firqotul Aini (1306463591)
+ * 
+ * 
+ * @version 2016/04/24
  */
+
 package tugas.cis;
 
-/**
- *
- * @author RAUHIL
- */
 import java.util.Arrays;
 
 class AES {
