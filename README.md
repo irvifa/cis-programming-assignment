@@ -6,11 +6,14 @@ Plese compile this program using:
 
 ```bash
 cd src
-javac -d tugas/cis/*.java
+javac cis/assignment/commons/*.java
+javac cis/assignment/lib/*.java
+javac cis/assignment/interfaces/*.java
+javac cis/assignment/*.java
 ```
 
 ## Run
 
 ```
-java tugas.cis.TUGASCIS
+java cis.assignment.Main
 ```
